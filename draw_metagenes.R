@@ -1,4 +1,5 @@
 
+## Generate the bed files using the metagenes script for figure 3
 
 ###############################################################################
 ## P53 binding on P53 regions
