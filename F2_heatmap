@@ -1,0 +1,43 @@
+programs <- read.table("programs.txt", header = 1, sep = "\t")
+programs <- as.list(programs)
+
+lapply(programs,function(x){sum(x!="")})
+
+program_clusters <- c(rep("A",169), rep("B",65), rep("C",177), rep("D",285), rep("E",199), rep("I",177), rep("F",93), rep("J",230), rep("H",172), rep("G",148), rep("K", 13))
+
+programs$oxidative.phos[programs$oxidative.phos%in%programs$MT[programs$MT!=""]] <- ""
+
+names(program_clusters) <- c(programs$PPARG[programs$PPARG!=""], programs$oxidative.phos[programs$oxidative.phos!=""], programs$fatty.acid.metabolism[programs$fatty.acid.metabolism!=""], programs$cell.cycle[programs$cell.cycle!=""], programs$P53.response[programs$P53.response!=""], programs$mRNA.processing[programs$mRNA.processing!=""], programs$viral.response[programs$viral.response!=""], programs$carbohydrate.metabolic.process[programs$carbohydrate.metabolic.process!=""], programs$skeletal.system.devel[programs$skeletal.system.devel!=""], programs$endoplasmic.reticulum.and.vessicle.trafficking[programs$endoplasmic.reticulum.and.vessicle.trafficking!=""],
+programs$MT[programs$MT!=""])
+
+int.genes <- names(program_clusters)[names(program_clusters)%in%rownames(exp)]
+#int.genes<-c(int.genes[-which(int.genes%in%programs$MT[1:13])], int.genes[which(int.genes%in%programs$MT[1:13])])
+
+split <- paste0("Cluster\n", program_clusters[int.genes])
+gene.matrix <- as.matrix(exp[int.genes,]+1)
+
+
+scaled.kd.matrix <- t(apply(gene.matrix, 1, function(x)(x-min(x))/(max(x)-min(x))))
+
+#write.table(scaled.kd.matrix, file = "../../../../../../../../../../../samanthabevill/Desktop/scaled_matrix.txt", sep = "\t")
+
+library(circlize)
+#colorRampPalette(c("#FFFFFF", "#42B2F1"))(6)
+
+col_adipo = colorRamp2(c(-1, -.75, -.5, -.25, 0, .25, .5, .75, 1), c("#FFFFFF", "#F6F6F6", "#EEEEEE", "#E6E6E6", "#DEDEDE", "#D6D6D6", "#CECECE", "#C6C6C6", "#BEBEBE"))
+
+col_map = colorRamp2(c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), c("#FFFFFF", "#D9EFFC", "#B3E0F9", "#8DD0F6", "#67C1F3", "#42B2F1", "#26A7EF", "#1CA3EE", "#139FEE", "#099BED", "#0098ED"))
+
+col_MDM2 = colorRamp2(c(0, 250, 500, 750, 1000, 1250, 1500, 1750, 2000), c("#FFFFFF", "#FCE7E2", "#FAD0C5", "#F8B9A8", "#F6A28B", "#F38A6E", "#F17351", "#EF5C34", "#ED4518"))
+
+MDM2_ann <- as.numeric(exp["MDM2",])
+adipo <- data$adiposity
+
+library(ComplexHeatmap)
+
+a <- Heatmap(scaled.kd.matrix,
+             col = col_map, split = split, column_split = c(rep("A_N",10), rep("B_WD",16), rep("C_DD",10), rep("D_CL", 4)), border = TRUE, show_row_names = F, name = "LPS programs", cluster_columns = F,
+             column_labels = colnames(exp), cluster_rows = F, top_annotation = HeatmapAnnotation(adiposity=adipo, MDM2 = MDM2_ann, col = list(adiposity = col_adipo, MDM2 = col_MDM2), simple_anno_size = unit(0.3, "cm")))
+
+pdf("LPS_programs_heatmap_reordered_withMT.pdf")
+b <- draw(a)
