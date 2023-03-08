@@ -1,15 +1,4 @@
----
-title: "R Notebook"
-output: html_notebook
----
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
-```{r}
-
-### IMPORT data
+# IMPORT data
 
 
 x <- read.csv("../../../../../../Liposarcoma/FINAL_COHORT_SAMP_ID.csv", row.names = 1)
@@ -41,13 +30,6 @@ exp <- exp[,col_order]
 
 #write.table(exp, "220804_exp_final_tumor_cohort_and_cell_lines.txt", sep = "\t")
 
-```
-
-
-
-
-
-```{r}
 
 ### Adiposity scoring of LPS cohort - tumors and cell lines
 
@@ -66,12 +48,6 @@ row.names(G) = c("adipo_score")
 G <- G[,col_order]
 
 #write.table(G, "adiposcore_tumor_and_cell_line.txt", sep = "\t")
-
-
-```
-
-
-```{r}
 
 
 ####FIGURE 1 plots
@@ -146,10 +122,7 @@ densityPlot(log2(data$MDM2) ~ as.factor(data$histology))
 
 t.test(tumors_DD$MDM2, tumors_WD$MDM2, alternative = "greater")$p.value
 
-```
 
-
-```{r}
 ### FIGURE 2 heatmap
 
 programs <- read.table("programs.txt", header = 1, sep = "\t")
@@ -195,6 +168,4 @@ a <- Heatmap(scaled.kd.matrix,
 
 pdf("LPS_programs_heatmap_reordered_withMT.pdf")
 b <- draw(a)
-
-```
 
