@@ -30,25 +30,6 @@ res4h.down <- setdiff(rownames(res4vs0)[which(res4vs0$padj<0.05&res4vs0$log2Fold
 res6h.up <- setdiff(setdiff(rownames(res6vs0)[which(res6vs0$padj<0.05&res6vs0$log2FoldChange>0)],res2h.up), res4h.up)
 res6h.down <- setdiff(setdiff(rownames(res6vs0)[which(res6vs0$padj<0.05&res6vs0$log2FoldChange<0)],res2h.down), res4h.down)
 
-load('/Volumes/seq_epiprod02/sgaldon/liposarcoma/rna_master_datasets/matrices/lps853_diff_genes.RData')
-load('/Volumes/seq_epiprod02/sgaldon/liposarcoma/rna_master_datasets/matrices/lps853_DESeq_results.RData')
-
-lps853.res4hvs0.up <- setdiff(lps853.res4hvs0.up,lps853.res2hvs0.up)
-lps853.res4hvs0.down <- setdiff(lps853.res4hvs0.down,lps853.res2hvs0.down)
-
-lps853.res6hvs0.up <- setdiff(setdiff(lps853.res6hvs0.up,lps853.res2hvs0.up),lps853.res4hvs0.up)
-lps853.res6hvs0.down <- setdiff(setdiff(lps853.res6hvs0.down,lps853.res2hvs0.down),lps853.res4hvs0.down)
-
-
-## Load knockdown data
-load('/Volumes/seq_epiprod02/sgaldon/liposarcoma/rna_master_datasets/knowckdown_cohort2/shRNA_1_4_DEGsvsNT.RData')
-
-shRNA4.up <- rownames(results(dds, name="Group_shRNA4_vs_NT"))[which(results(dds, name="Group_shRNA4_vs_NT")$padj<0.05 & results(dds, name="Group_shRNA4_vs_NT")$log2FoldChange>0)]
-shRNA4.down <- rownames(results(dds, name="Group_shRNA4_vs_NT"))[which(results(dds, name="Group_shRNA4_vs_NT")$padj<0.05 & results(dds, name="Group_shRNA4_vs_NT")$log2FoldChange<0)]
-
-shRNA1.up <- rownames(results(dds, name="Group_shRNA1_vs_NT"))[which(results(dds, name="Group_shRNA1_vs_NT")$padj<0.05 & results(dds, name="Group_shRNA1_vs_NT")$log2FoldChange>0)]
-shRNA1.down <- rownames(results(dds, name="Group_shRNA1_vs_NT"))[which(results(dds, name="Group_shRNA1_vs_NT")$padj<0.05 & results(dds, name="Group_shRNA1_vs_NT")$log2FoldChange<0)]
-
 
 ################################################################################
 ## Data analysis
@@ -77,21 +58,6 @@ Heatmap(LPS141.FC.matrix[unique(c(res2h.down,res4h.down,res6h.down)),],
         row_labels = rep('',length(unique(c(res2h.down,res4h.down,high.genes,setdiff(res6h.down,high.genes))))))
 dev.off()
 
-
-LPS853.FC.matrix <- cbind(lps853.res2vs0$log2FoldChange, lps853.res4vs0$log2FoldChange, lps853.res6vs0$log2FoldChange)
-rownames(LPS853.FC.matrix) <- rownames(lps853.res2vs0)
-
-pdf(file = 'hdm201_upGenes_1ps853.pdf', width = 4, height = 5)
-Heatmap(LPS853.FC.matrix[unique(c(lps853.res2hvs0.up,lps853.res4hvs0.up,lps853.res6hvs0.up)),], 
-        row_order = unique(c(lps853.res2hvs0.up,lps853.res4hvs0.up,lps853.res6hvs0.up)), cluster_columns = F, 
-        col = colorRamp2(c(-2, 0, 2), c("blue4", "white", "red4")), row_labels = rep('',length(unique(c(lps853.res2hvs0.up,lps853.res4hvs0.up,lps853.res6hvs0.up)))))
-dev.off()
-
-pdf(file = 'hdm201_downGenes_1ps853.pdf', width = 4, height = 5)
-Heatmap(LPS853.FC.matrix[unique(c(lps853.res2hvs0.down,lps853.res4hvs0.down,lps853.res6hvs0.down)),], 
-        row_order = unique(c(lps853.res2hvs0.down,lps853.res4hvs0.down,lps853.res6hvs0.down)), cluster_columns = F, 
-        col = colorRamp2(c(-2, 0, 2), c("blue4", "white", "red4")), row_labels = rep('',length(unique(c(lps853.res2hvs0.down,lps853.res4hvs0.down,lps853.res6hvs0.down)))))
-dev.off()
 ################################################################################
 ## Drug Treatment
 
