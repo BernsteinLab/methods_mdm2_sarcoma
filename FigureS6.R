@@ -1,3 +1,16 @@
+
+
+## Total mdm2 peaks per cell line
+
+pdf('barplots/totalMDM2binding_1.pdf', width = 2.4, height = 4)
+barplot(rbind(142,86), beside=T,ylim=c(0,1450), names=c('hct116','u2os'), las=2)
+dev.off()
+
+pdf('barplots/totalMDM2binding_2.pdf', width = 2.4, height = 4)
+barplot(rbind(678,1414), beside=T,ylim=c(0,1450), names=c('lps853','lps141'), las=2)
+dev.off()
+
+
 ##################################################################
 ## Generate barplots on MDM2 Promoter-Enhancer categories, 
 ## and overlaps with hubs, p53 and YY1
