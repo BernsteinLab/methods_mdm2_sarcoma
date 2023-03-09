@@ -1,0 +1,224 @@
+# Generate the bed files to make the TFs heatmaps 
+
+# - P53 is all the TF binding - separate enhancer and promoter
+# - MDM2 is all that are not bound by P53
+# - Jun and RUNX peaks that are independent of mdm2 and p53
+
+
+bedtools intersect -wa -a data/lps853_lps141_p53.bed -b data/annotation/H3k27ac_2Samples_peaks.bed | bedtools intersect -v -wa -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed > data/p53_enhancers.bed
+bedtools intersect -wa -a data/lps853_lps141_p53.bed -b data/annotation/hg38_refGene_promoters_500bp.bed | bedtools sort | uniq > data/p53_promoters.bed
+
+bedtools intersect -wa -a data/lps853_lps141_mdm2.bed -b data/annotation/H3k27ac_2Samples_peaks.bed | bedtools intersect -v -wa -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | bedtools intersect -v -wa -a stdin -b ../lps853_lps141_p53.bed | bedtools sort | uniq > data/mdm2_enhancers.bed
+bedtools intersect -wa -a data/lps853_lps141_mdm2.bed -b data/annotation/hg38_refGene_promoters_500bp.bed | bedtools intersect -v -wa -a stdin -b data/lps853_lps141_p53.bed | bedtools sort | uniq > data/mdm2_promoters.bed
+
+cat data/lps853_lps141_cjun.bed data/lps853_lps141_runx.bed | bedtools sort | bedtools merge | bedtools intersect -wa -a stdin -b data/annotation/H3k27ac_2Samples_peaks.bed | bedtools intersect -v -wa -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | bedtools intersect -v -wa -a stdin -b data/lps853_lps141_p53.bed | bedtools intersect -v -wa -a stdin -b data/lps853_lps141_mdm2.bed | bedtools sort | uniq > data/cjun_runx_enhancers.bed
+cat data/lps853_lps141_cjun.bed data/lps853_lps141_runx.bed | bedtools sort | bedtools merge | bedtools intersect -wa -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | bedtools intersect -v -wa -a stdin -b data/lps853_lps141_p53.bed | bedtools intersect -v -wa -a stdin -b data/lps853_lps141_mdm2.bed | bedtools sort | uniq > data/cjun_runx_promoters.bed
+
+
+##################################################
+## Example on how to get the gene promoters that have loops into with MDM2 bound in either loop anchor.
+## This is repeated for all TFs and then the promoters are overlapped with a gene annotation to extract the gene names.
+
+## MDM2
+# LPS141
+bedtools pairtobed -a data/LPS141_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_mdm2.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_mdm2_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS141_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_mdm2.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_mdm2_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_mdm2_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_mdm2_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_mdm2_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_mdm2_PP_targets_filter10.txt
+
+cat data/lps141_mdm2_EP_targets_filter10.txt data/lps141_mdm2_PP_targets_filter10.txt | sort | uniq > data/lps141_mdm2_EP_PP_targets_filter10.txt
+
+# LPS853
+
+
+bedtools pairtobed -a data/LPS853_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_mdm2.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_mdm2_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS853_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_mdm2.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_mdm2_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_mdm2_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_mdm2_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_mdm2_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_mdm2_PP_targets_filter10.txt
+
+cat data/lps853_mdm2_EP_targets_filter10.txt data/lps853_mdm2_PP_targets_filter10.txt | sort | uniq > data/lps853_mdm2_EP_PP_targets_filter10.txt
+
+
+
+## P53
+# LPS141
+bedtools pairtobed -a data/LPS141_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_p53.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_p53_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS141_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_p53.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_p53_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_p53_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_p53_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_p53_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_p53_PP_targets_filter10.txt
+
+cat data/lps141_p53_EP_targets_filter10.txt data/lps141_p53_PP_targets_filter10.txt | sort | uniq > data/lps141_p53_EP_PP_targets_filter10.txt
+
+# LPS853
+
+
+bedtools pairtobed -a data/LPS853_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_p53.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_p53_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS853_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_p53.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_p53_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_p53_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_p53_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_p53_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_p53_PP_targets_filter10.txt
+
+cat data/lps853_p53_EP_targets_filter10.txt data/lps853_p53_PP_targets_filter10.txt | sort | uniq > data/lps853_p53_EP_PP_targets_filter10.txt
+
+
+
+
+## Jun
+# LPS141
+bedtools pairtobed -a data/LPS141_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_cjun.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_cjun_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS141_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_cjun.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_cjun_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_cjun_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_cjun_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_cjun_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_cjun_PP_targets_filter10.txt
+
+cat data/lps141_cjun_EP_targets_filter10.txt data/lps141_cjun_PP_targets_filter10.txt | sort | uniq > data/lps141_cjun_EP_PP_targets_filter10.txt
+
+# LPS853
+
+
+bedtools pairtobed -a data/LPS853_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_cjun.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_cjun_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS853_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_cjun.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_cjun_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_cjun_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_cjun_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_cjun_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_cjun_PP_targets_filter10.txt
+
+cat data/lps853_cjun_EP_targets_filter10.txt data/lps853_cjun_PP_targets_filter10.txt | sort | uniq > data/lps853_cjun_EP_PP_targets_filter10.txt
+
+
+
+
+## RUNX
+# LPS141
+bedtools pairtobed -a data/LPS141_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_runx.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_runx_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS141_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_runx.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps141_runx_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_runx_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_runx_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps141_runx_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps141_runx_PP_targets_filter10.txt
+
+cat data/lps141_runx_EP_targets_filter10.txt data/lps141_runx_PP_targets_filter10.txt | sort | uniq > data/lps141_runx_EP_PP_targets_filter10.txt
+
+# LPS853
+
+
+bedtools pairtobed -a data/LPS853_1_E_P_filter9_loops.bedpe -b data/lps853_lps141_mdm2.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_mdm2_EP_targets_filter10.bed
+bedtools pairtobed -a data/LPS853_1_P_P_filter9_loops.bedpe -b data/lps853_lps141_mdm2.bed | bedtools pairtobed -a stdin -b data/annotation/hg38_refGene_promoters_500bp.bed | cut -f 12,13,14 | bedtools sort | uniq > data/lps853_mdm2_PP_targets_filter10.bed
+
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_mdm2_EP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_mdm2_EP_targets_filter10.txt
+bedtools intersect -a data/annotation/hg38_geneName_500_promoter_sorted.bed -b data/lps853_mdm2_PP_targets_filter10.bed | cut -f 4 | sort | uniq > data/lps853_mdm2_PP_targets_filter10.txt
+
+cat data/lps853_mdm2_EP_targets_filter10.txt data/lps853_mdm2_PP_targets_filter10.txt | sort | uniq > data/lps853_mdm2_EP_PP_targets_filter10.txt
+
+
+##################################################
+## Generate the gene sets by obtaining the genes that are regulated in both lps141 and lps853.
+## substract p53 targets from mdm2 list and those two from jun/runx
+
+comm -12 --check-order data/lps141_p53_EP_PP_targets_filter10.txt data/lps853_p53_EP_PP_targets_filter10.txt | sort | uniq | comm -12 --check-order - data/annotation/lps141_expressed_genes.txt | comm -12 --check-order - data/annotation/lps853_expressed_genes.txt | sort | uniq > data/p53_geneset.txt
+comm -12 --check-order data/lps141_mdm2_EP_PP_targets_filter10.txt data/lps853_mdm2_EP_PP_targets_filter10.txt | sort | uniq | comm -12 --check-order - data/annotation/lps141_expressed_genes.txt | comm -12 --check-order - data/annotation/lps853_expressed_genes.txt | sort | uniq | comm -23 - data/p53_geneset.txt > data/mdm2_geneset.txt
+comm -12 --check-order data/lps141_mdm2_PP_targets_filter10.txt data/lps853_mdm2_PP_targets_filter10.txt | sort | uniq | comm -12 --check-order - data/annotation/lps141_expressed_genes.txt | comm -12 --check-order - data/annotation/lps853_expressed_genes.txt | sort | uniq | comm -23 - data/p53_geneset.txt > data/mdm2_PP_geneset.txt
+comm -12 --check-order data/lps141_cjun_EP_PP_targets_filter10.txt data/lps853_cjun_EP_PP_targets_filter10.txt | sort | uniq | comm -12 --check-order - data/annotation/lps141_expressed_genes.txt | comm -12 --check-order - data/annotation/lps853_expressed_genes.txt | sort | uniq | comm -23 - data/p53_geneset.txt | comm -23 - data/mdm2_geneset.txt > data/cjun_geneset.txt
+comm -12 --check-order data/lps141_runx_EP_PP_targets_filter10.txt data/lps853_runx_EP_PP_targets_filter10.txt | sort | uniq | comm -12 --check-order - data/annotation/lps141_expressed_genes.txt | comm -12 --check-order - data/annotation/lps853_expressed_genes.txt | sort | uniq | comm -23 - data/p53_geneset.txt | comm -23 - data/mdm2_geneset.txt > data/runx_geneset.txt
+
+
+###################################################
+## Get the peaks associated with these gene lists 
+## Use both promoters and enhancer anchors to extract peaks
+
+#### P53
+#Get the promoter regions that are covered by the loops+peak
+awk 'NR==FNR{a[$0]; next} $4 in a' p53_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_p53_EP_targets_filter10.bed > lps141_p53_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' p53_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_p53_PP_targets_filter10.bed > lps141_p53_PP_promoters.tmp
+
+#Detect the loops that overlap with the promoters, then get the peaks in the common sections that intersect with that loop, and finally extract the region that corresponds to the particular cell line
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_E_P_filter9_loops.bedpe -b lps141_p53_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_p53.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_p53.bed -b stdin | bedtools sort | uniq > p53_EP_geneset_lps141.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_P_P_filter9_loops.bedpe -b lps141_p53_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_p53.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_p53.bed -b stdin | bedtools sort | uniq > p53_PP_geneset_lps141.bed
+
+
+## LPS853 ##
+awk 'NR==FNR{a[$0]; next} $4 in a' p53_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_p53_EP_targets_filter10.bed > lps853_p53_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' p53_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_p53_PP_targets_filter10.bed > lps853_p53_PP_promoters.tmp
+
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_E_P_filter9_loops.bedpe -b lps853_p53_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_p53.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_p53.bed -b stdin | bedtools sort | uniq > p53_EP_geneset_lps853.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_P_P_filter9_loops.bedpe -b lps853_p53_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_p53.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_p53.bed -b stdin | bedtools sort | uniq > p53_PP_geneset_lps853.bed
+
+
+
+#### MDM2
+## LPS141 ##
+awk 'NR==FNR{a[$0]; next} $4 in a' mdm2_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_mdm2_EP_targets_filter10.bed > lps141_mdm2_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' mdm2_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_mdm2_PP_targets_filter10.bed > lps141_mdm2_PP_promoters.tmp
+
+#Detect the loops that overlap with the promoters, then get the peaks in the common sections that intersect with that loop, and finally extract the region that corresponds to the particular cell line
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_E_P_filter9_loops.bedpe -b lps141_mdm2_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_mdm2.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_mdm2.bed -b stdin | bedtools sort | uniq > mdm2_EP_geneset_lps141.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_P_P_filter9_loops.bedpe -b lps141_mdm2_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_mdm2.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_mdm2.bed -b stdin | bedtools sort | uniq > mdm2_PP_geneset_lps141.bed
+
+
+## LPS853 ##
+awk 'NR==FNR{a[$0]; next} $4 in a' mdm2_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_mdm2_EP_targets_filter10.bed > lps853_mdm2_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' mdm2_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_mdm2_PP_targets_filter10.bed > lps853_mdm2_PP_promoters.tmp
+
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_E_P_filter9_loops.bedpe -b lps853_mdm2_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_mdm2.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_mdm2.bed -b stdin | bedtools sort | uniq > mdm2_EP_geneset_lps853.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_P_P_filter9_loops.bedpe -b lps853_mdm2_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_mdm2.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_mdm2.bed -b stdin | bedtools sort | uniq > mdm2_PP_geneset_lps853.bed
+
+
+
+#### cJun
+## LPS141 ##
+awk 'NR==FNR{a[$0]; next} $4 in a' cjun_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_cjun_EP_targets_filter10.bed > lps141_cjun_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' cjun_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_cjun_PP_targets_filter10.bed > lps141_cjun_PP_promoters.tmp
+
+#Detect the loops that overlap with the promoters, then get the peaks in the common sections that intersect with that loop, and finally extract the region that corresponds to the particular cell line
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_E_P_filter9_loops.bedpe -b lps141_cjun_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_cjun.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_cjun.bed -b stdin | bedtools sort | uniq > cjun_EP_geneset_lps141.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_P_P_filter9_loops.bedpe -b lps141_cjun_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_cjun.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_cjun.bed -b stdin | bedtools sort | uniq > cjun_PP_geneset_lps141.bed
+
+
+## LPS853 ##
+awk 'NR==FNR{a[$0]; next} $4 in a' cjun_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_cjun_EP_targets_filter10.bed > lps853_cjun_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' cjun_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_cjun_PP_targets_filter10.bed > lps853_cjun_PP_promoters.tmp
+
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_E_P_filter9_loops.bedpe -b lps853_cjun_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_cjun.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_cjun.bed -b stdin | bedtools sort | uniq > cjun_EP_geneset_lps853.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_P_P_filter9_loops.bedpe -b lps853_cjun_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_cjun.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_cjun.bed -b stdin | bedtools sort | uniq > cjun_PP_geneset_lps853.bed
+
+
+
+#### RUNX
+## LPS141 ##
+awk 'NR==FNR{a[$0]; next} $4 in a' runx_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_runx_EP_targets_filter10.bed > lps141_runx_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' runx_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps141_runx_PP_targets_filter10.bed > lps141_runx_PP_promoters.tmp
+
+#Detect the loops that overlap with the promoters, then get the peaks in the common sections that intersect with that loop, and finally extract the region that corresponds to the particular cell line
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_E_P_filter9_loops.bedpe -b lps141_runx_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_runx.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_runx.bed -b stdin | bedtools sort | uniq > runx_EP_geneset_lps141.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS141_1/LPS141_1_P_P_filter9_loops.bedpe -b lps141_runx_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_runx.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps141_runx.bed -b stdin | bedtools sort | uniq > runx_PP_geneset_lps141.bed
+
+
+
+## LPS853 ##
+awk 'NR==FNR{a[$0]; next} $4 in a' runx_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_runx_EP_targets_filter10.bed > lps853_runx_EP_promoters.tmp
+awk 'NR==FNR{a[$0]; next} $4 in a' runx_geneset.txt /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/hg38_geneName_500_promoter_sorted.bed | cut -f 1,2,3 | bedtools intersect -wa -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/hichip_geneSets_overlap/lps853_runx_PP_targets_filter10.bed > lps853_runx_PP_promoters.tmp
+
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_E_P_filter9_loops.bedpe -b lps853_runx_EP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_runx.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_runx.bed -b stdin | bedtools sort | uniq > runx_EP_geneset_lps853.bed
+bedtools pairtobed -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/hiChip/loop_annotation/LPS853_1/LPS853_1_P_P_filter9_loops.bedpe -b lps853_runx_PP_promoters.tmp | bedtools pairtobed -a stdin -b /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/cell_lines_overlaps/lps853_lps141_runx.bed | cut -f 12,13,14 | bedtools intersect -wa -a /seq/epiprod02/sgaldon/liposarcoma/chip_master_datasets/bed_files/lps853_runx.bed -b stdin | bedtools sort | uniq > runx_PP_geneset_lps853.bed
+
+
+
+
+cat p53_EP_geneset_lps141.bed p53_PP_geneset_lps141.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > p53_merged_geneset_lps141.bed
+cat p53_EP_geneset_lps853.bed p53_PP_geneset_lps853.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > p53_merged_geneset_lps853.bed
+
+cat mdm2_EP_geneset_lps141.bed mdm2_PP_geneset_lps141.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > mdm2_merged_geneset_lps141.bed
+cat mdm2_EP_geneset_lps853.bed mdm2_PP_geneset_lps853.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > mdm2_merged_geneset_lps853.bed
+
+cat cjun_EP_geneset_lps141.bed cjun_PP_geneset_lps141.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > cjun_merged_geneset_lps141.bed
+cat cjun_EP_geneset_lps853.bed cjun_PP_geneset_lps853.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > cjun_merged_geneset_lps853.bed
+
+cat runx_EP_geneset_lps141.bed runx_PP_geneset_lps141.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > runx_merged_geneset_lps141.bed
+cat runx_EP_geneset_lps853.bed runx_PP_geneset_lps853.bed | bedtools sort | uniq | bedtools merge | bedtools sort | uniq > runx_merged_geneset_lps853.bed
+
+
+rm *.tmp
+
+
+
