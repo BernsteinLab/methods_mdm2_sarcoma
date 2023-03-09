@@ -1,3 +1,32 @@
+# IMPORT data
+
+
+x <- read.csv("../../../../../../Liposarcoma/FINAL_COHORT_SAMP_ID.csv", row.names = 1)
+
+y <- read.delim("../../../../../../Liposarcoma/Computational analyses/Chadi_analysis/RNA-Seq_Final_Matrix/Cohort1/Liposarcoma_Cohort1_TPM_Matrix.txt", sep = "\t", header = TRUE, row.names = 1)
+
+z <- read.delim("../../../../../../Liposarcoma/Computational analyses/Chadi_analysis/RNA-Seq_Final_Matrix/Cohort2/Liposarcoma_Cohort2_TPM_Matrix.txt", sep = "\t", header = TRUE, row.names = 1)
+
+w <- read.delim("../../../../../../Liposarcoma/Computational analyses/Chadi_analysis/RNA-Seq_Cell_Lines/Cell_Lines_TPM_Matrix.txt", sep = "\t", header = TRUE, row.names = 1)
+
+lps <- cbind(y,z)
+cell_lines <- w[,c("LPS141_1","LPS853_2","T449_2","T778_1")]
+
+IDs <- row.names(x)
+
+exp <- lps[,colnames(lps) %in% IDs]
+
+drops <- c("WD14.1", "N27", "N6")
+exp <- exp[,!(names(exp) %in% drops)]
+
+exp <- merge(exp, cell_lines, by = 'row.names')
+row.names(exp) <- exp$Row.names
+exp <- exp[,-1]
+
+col_order <- c("N34", "N15", "N22", "N33", "N31", "N30", "N14", "N19", "N10", "N12", "WD36", "WD34", "WD24", "WD33", "WD12", "WD15", "WD23", "WD22", "WD4", "WD10", "WD14", "WD19", "WD13", "WD28", "WD30", "WD5", "DD30", "DD20", "DD10", "DD2", "DD1", "DD15", "DD35", "DD36", "DD31", "DD_SS", "LPS141_1","LPS853_2","T449_2","T778_1")
+
+exp <- exp[,col_order]
+
 programs <- read.table("programs.txt", header = 1, sep = "\t")
 programs <- as.list(programs)
 
