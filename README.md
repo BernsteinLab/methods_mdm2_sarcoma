@@ -3,7 +3,6 @@ Bioinformatics pipelines developed at the Bernstein lab for the analyses of RNA-
 
 Paper is published in Cell Genomics: 
 
-The processed data used for these pipelines can be found in GEO: 
+The processed data used for these pipelines can be found in GEO: GSE213300
 
-The raw data can be found in GEO and dbGAP: 
 
